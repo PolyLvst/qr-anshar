@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Absensi</title>
+    <link rel="stylesheet" href="../static/bootstrap-5.3.2-dist/css/bootstrap.css">
+    <script src="../static/bootstrap-5.3.2-dist/js/bootstrap.bundle.js"></script>
+    <script src="../static/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="../static/mycss/mycss.css">
+    <script src="../static/myjs/myjs.js"></script>
+</head>
+
+<body>
+    <div class="container text-center my-3">
+        <div class="row">
+            <div class="col">
+                <img src="../static/assets/logo.png" class="header-logo" alt="logo-kiri">
+            </div>
+            <div class="col-6 align-self-center">
+                <h2 class="header-text">SD ISLAM TERPADU NURUL ANSHAR</h2>
+            </div>
+            <div class="col">
+                <img src="../static/assets/logokanan.png" class="header-logo" alt="logo-kanan">
+            </div>
+        </div>
+        <div class="col py-5 my-4 border border-3 rounded-3">
+            <div class="row-cols-6 pb-2" id="picture-box">
+                <img src="../static/assets/person-bounding-box.svg" alt="" id="picture-student" class="profile-icon">
+            </div>
+            <div id="menunggu-scan-text">
+                <h5>Scan QR</h5>
+                <p id="text-menunggu">Menunggu .</p>
+            </div>
+        </div>
+        <div class="row-cols-3 pb-3">
+            <input type="text" autofocus id="text-input-scan">
+        </div>
+        <div class="row-cols-1">
+            <button class="btn btn-success" onclick="loadStudentPicture(1)">Press Me</button>
+            <p id="status"></p>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function(){
+            loadingAnim()
+            detectTextInput()
+        });
+    </script>
+</body>
+
+</html>

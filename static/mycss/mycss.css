@@ -1,0 +1,17 @@
+@font-face {
+    font-family: 'Poppins-SemiBoldItalic';
+    src: url(../assets/Poppins/Poppins-SemiBoldItalic.ttf);
+}
+
+.header-text {
+    font-family: 'Poppins-SemiBoldItalic';
+}
+
+.header-logo {
+    height: 100px;
+}
+
+.profile-icon {
+    width: 100px;
+    height: 100px;
+}
