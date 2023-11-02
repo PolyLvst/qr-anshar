@@ -33,15 +33,20 @@
             <div id="menunggu-scan-text">
                 <h5>Scan QR</h5>
                 <p id="text-menunggu">Menunggu .</p>
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="welcome-section">
             </div>
         </div>
         <div class="row-cols-3 pb-3">
             <input type="text" autofocus id="text-input-scan">
         </div>
-        <div class="row-cols-1">
+        <!-- <div class="row-cols-1">
             <button class="btn btn-success" onclick="loadStudentPicture(1)">Press Me</button>
             <p id="status"></p>
-        </div>
+        </div> -->
         <!-- Button trigger modal -->
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
             Tambah Data
@@ -59,12 +64,12 @@
                         <div class="input-group mb-2">
                             <button class="btn btn-outline-primary" type="button" id="button-addon1">Check NIS</button>
                             <input type="text" class="form-control" placeholder="NIS" id="input-nis">
-                        </div>                          
+                        </div>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control" placeholder="Nama" id="input-nama">
                         </div>
                         <div class="input-group">
-                            <input type="file" class="form-control" id="inputGroupFile04" placeholder="Foto murid">
+                            <input type="file" class="form-control" id="input-foto">
                             <!-- <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Button</button> -->
                         </div>
                     </div>
@@ -79,8 +84,9 @@
     </div>
     <script>
         $(document).ready(function () {
-            loadingAnim()
-            detectTextInput()
+            loadingAnim();
+            detectTextInput();
+            detectIdle();
         });
     </script>
 </body>
