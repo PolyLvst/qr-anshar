@@ -3,12 +3,40 @@
     src: url(../assets/Poppins/Poppins-SemiBoldItalic.ttf);
 }
 
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html, body{
+    height: 100%;
+    width: 100%;
+}
+
+.main-container{
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg,#fa71a8,#fdbfbf,#ffdcdc);
+    background-size: cover;
+}
+
 .header-text {
     font-family: 'Poppins-SemiBoldItalic';
+    color: rgb(255, 255, 255);
+    -webkit-text-stroke: 1px #FFFFFF;
 }
 
 .header-logo {
-    height: 100px;
+    height: auto;
+    width: 100px;
+}
+
+.border-style-scan{
+    border: 5px;
+    border-radius: 2px;
+    border-style: solid;
+    border-color: #FFF6F6;
 }
 
 .profile-icon {

@@ -1,5 +1,5 @@
 var successDing = "../static/assets/ding.mp3";
-let idleTime = 4 //Seconds
+let idleTime = 3 //Seconds
 
 function loadingAnim() {
     const loadingDots = $("#text-menunggu");
@@ -35,23 +35,54 @@ function getNameById(id) {
         "url": url,
         "data": {},
         success: function (response) {
-            let data = response["data"];
-            let name = data["name"];
-            let classStu = data["class"];
-
             const pictureArea = $("#menunggu-scan-text");
             const welcomeSection = $("#welcome-section");
+            if (response["status"] == "oke") {
+                absenSiswa(id);
+                let data = response["data"];
+                let name = data["name"];
+                let classStu = data["class"];
 
-            pictureArea.empty()
-            welcomeSection.empty()
-            loadStudentPicture(id);
+                pictureArea.empty()
+                welcomeSection.empty()
+                loadStudentPicture(id);
 
-            let tempHtml = `
-            <h5>Selamat datang ${name}<h5>
-            <p>Kelas ${classStu}<p>
-            `;
-            welcomeSection.append(tempHtml);
-            playSound(successDing);
+                let tempHtml = `
+                <h5>Selamat datang ${name}<h5>
+                <p>Kelas ${classStu}<p>
+                `;
+                welcomeSection.append(tempHtml);
+                playSound(successDing);
+            } else {
+                pictureArea.empty()
+                welcomeSection.empty()
+                let warningHtml = `
+                <div class="row justify-content-center">
+                    <div class="alert alert-danger d-flex align-items-center w-50" role="alert">
+                        <img class="bi flex-shrink-2 me-2" src="../static/assets/exclamation-triangle-fill.svg" alt="warning icon">
+                        <div>Siswa/i tidak ditemukan</div>
+                    </div>
+                </div>`;
+                welcomeSection.append(warningHtml);
+            }
+        }
+    })
+};
+
+function absenSiswa(id) {
+    $.ajax({
+        "type":"POST",
+        "url":"/api/absen",
+        "data":{
+            "nis":id,
+            "tipe":"masuk"
+        },
+        success:function(response){
+            if (response["status"] == "oke"){
+                window.alert("Sukses")
+            } else {
+                window.alert("Telah terabsen")
+            }
         }
     })
 };

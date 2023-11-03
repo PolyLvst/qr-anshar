@@ -1,4 +1,4 @@
-from flask import Flask,render_template,jsonify
+from flask import Flask,render_template,jsonify,request
 import mysql.connector
 from dotenv import load_dotenv
 import os
@@ -50,7 +50,7 @@ def get_name(id):
         results:tuple = [t_stu for t_stu in cache if t_stu[0] == id][0]
     except IndexError as e:
         print(f"Id not found - {e}")
-        return jsonify({"msg":"failed, no student with that id"})
+        return jsonify({"status":"failed","msg":"failed, no student with that id"})
     print(results)
     class_stu_unformat = cache_class[results[2]-1][1]
     class_stu = re.sub(r'(?i)kelas', '', class_stu_unformat)
@@ -60,8 +60,23 @@ def get_name(id):
                 "class":class_stu,
                 "img_path":"",
                 "status":"terabsen"},
+        "status":"oke",
         "msg":"success"
         }
+    return jsonify(data)
+
+@app.route("/api/absen",methods=["POST"])
+def absen_siswa():
+    nis = request.form.get("nis")
+    print(nis)
+    if nis in marked_students:
+        print("Already marked")
+        return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
+    marked_students.append(nis)
+    data = {
+        "data":"data",
+        "status":"oke",
+        "msg":"success"}
     return jsonify(data)
 
 @app.route("/api/create",methods=["POST"])
@@ -72,7 +87,8 @@ if __name__ == "__main__":
     cursor,conn = connect_db()
     cache:list = _get_cache_users(cursor)
     cache_class:list = _get_cache_class(cursor)
-    # print(cache)
+    
+    marked_students = []
     app.run("localhost",5000,True)
     cursor.close()
     conn.close()
