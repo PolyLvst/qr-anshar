@@ -52,7 +52,6 @@ function getNameById(id) {
                 <p>Kelas ${classStu}<p>
                 `;
                 welcomeSection.append(tempHtml);
-                playSound(successDing);
             } else {
                 pictureArea.empty()
                 welcomeSection.empty()
@@ -79,6 +78,7 @@ function absenSiswa(id) {
         },
         success:function(response){
             if (response["status"] == "oke"){
+                playSound(successDing);
                 window.alert("Sukses")
             } else {
                 window.alert("Telah terabsen")

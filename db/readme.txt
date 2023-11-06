@@ -1,0 +1,1 @@
+Post periodic akan mengirim absensi siswa secara bertahap. Agar server utama tidak terbebani

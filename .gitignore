@@ -1,4 +1,5 @@
 /static/assets/student-pictures
 /venv
 /coba coba
+/db/post_periodic
 .env
