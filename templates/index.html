@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scan Absensi</title>
+    <link rel="icon" href="../static/assets/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="../static/bootstrap-5.3.2-dist/css/bootstrap.css">
     <script src="../static/bootstrap-5.3.2-dist/js/bootstrap.bundle.js"></script>
     <script src="../static/jquery-3.7.1.min.js"></script>
@@ -14,37 +15,52 @@
 </head>
 
 <body>
-    <div class="main-container text-center py-3 px-5">
+    <div class="main-container text-center py-4">
+
         <div class="container">
             <div class="row">
-                <div class="col-md">
+                <div class="col">
                     <img src="../static/assets/logo.png" class="header-logo" alt="logo-kiri">
                 </div>
-                <div class="col-6 align-self-center">
+                <div class="col-6 align-self-center d-none d-md-block">
                     <h2 class="header-text">SD ISLAM TERPADU NURUL ANSHAR</h2>
                 </div>
-                <div class="col-md">
+                <div class="col">
                     <img src="../static/assets/logokanan.png" class="header-logo" alt="logo-kanan">
                 </div>
-            </div>
-            <div class="col border-style-scan col py-5 my-4 rounded-3">
-                <div class="row-cols-6 pb-2" id="picture-box">
-                    <img src="../static/assets/person-bounding-box.svg" alt="" id="picture-student" class="profile-icon">
+
+                <div class="mt-2 col-12 align-self-center d-block d-md-none">
+                    <h2 class="header-text">SD ISLAM TERPADU NURUL ANSHAR</h2>
                 </div>
-                <div id="menunggu-scan-text">
+            </div>
+
+            <div class="col border-style-scan my-4 rounded-3 border-opacity-75" id="border-scan">
+
+                <div class="d-flex justify-content-center pb-2 mt-5" id="picture-box">
+                    <div class="image-container">
+                        <img src="../static/assets/person-bounding-box.svg" alt="student-pict" id="picture-student"
+                            class="profile-icon">
+                    </div>
+                </div>
+
+                <div id="menunggu-scan-text" class="mb-4">
                     <h5>Scan QR</h5>
                     <p id="text-menunggu">Menunggu .</p>
                     <div class="spinner-border spinner-border-sm" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div id="welcome-section" class="mt-2">
+                <div id="welcome-section">
+                </div>
+                <div id="alert-section">
                 </div>
             </div>
             <div class="container text-center">
                 <div class="row pb-3 justify-content-center">
                     <div class="col-5">
-                        <input type="text" autofocus id="text-input-scan" class="form-control">
+                        <div class="input-group">
+                            <input type="text" autofocus id="text-input-scan" class="form-control">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -53,76 +69,60 @@
                 <p id="status"></p>
             </div> -->
             <div class="row">
-                <!-- Button trigger modal -->
                 <div class="col">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahData">
-                        Tambah Data
+                    <button type="button" class="btn btn-secondary" onclick="window.location.replace('/login');">
+                        Login
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalIzin">
-                        Izin
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalTambahData">
+                        Daftar
                     </button>
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalSakit">
-                        Sakit
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit">
+                        Edit
                     </button>
                 </div>
             </div>
-    
+
             <!-- Modal -->
             <div class="modal fade" id="modalTambahData" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Data Siswa</h1>
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Daftar Siswa/i</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            <div class="input-group mb-2">
-                                <button class="btn btn-outline-primary" type="button" id="button-addon1">Check NIS</button>
-                                <input type="text" class="form-control" placeholder="NIS" id="input-nis">
+                        <form action="">
+                            <div class="modal-body">
+                                <div class="input-group mb-2">
+                                    <button class="btn btn-outline-primary" type="button" id="button-addon1"
+                                        onclick="checkIdExist('#input-nis')">Check NIS</button>
+                                    <input type="text" class="form-control" placeholder="NIS" id="input-nis" required>
+                                </div>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" placeholder="Nama" id="input-nama" required>
+                                </div>
+                                <div class="input-group mb-2">
+                                    <select required class="form-select form-select-sm" aria-label="Small select example" placeholder="Kelas id" id="input-kelas">
+                                        <option selected value="">Pilih - kelas</option>
+                                        <option value=""> --- </option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="input-foto" required>
+                                    <!-- <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Button</button> -->
+                                </div>
                             </div>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" placeholder="Nama" id="input-nama">
+                            <div class="modal-footer">
+                                <button type="reset" class="btn btn-warning">Reset</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="button" class="btn btn-primary" onclick="addStudent();">Simpan</button>
                             </div>
-                            <div class="input-group">
-                                <input type="file" class="form-control" id="input-foto">
-                                <!-- <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Button</button> -->
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="button" class="btn btn-primary">Simpan</button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="modalIzin" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Izin</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="input-group mb-2">
-                                <button class="btn btn-outline-primary" type="button" id="button-addon1">Check NIS</button>
-                                <input type="text" class="form-control" placeholder="NIS" id="input-nis">
-                            </div>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" placeholder="Nama" id="input-nama">
-                            </div>
-                            <div class="input-group">
-                                <span class="input-group-text">Alasan</span>
-                                <textarea class="form-control" aria-label="With textarea"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="button" class="btn btn-primary">Simpan</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="modalSakit" tabindex="-1" aria-hidden="true">
+
+            <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -131,31 +131,30 @@
                         </div>
                         <div class="modal-body">
                             <div class="input-group mb-2">
-                                <button class="btn btn-outline-primary" type="button" id="button-addon1">Check NIS</button>
-                                <input type="text" class="form-control" placeholder="NIS" id="input-nis">
+                                <button class="btn btn-outline-primary" type="button" id="button-addon1"
+                                    onclick="checkIdExist('#input-nis-edit','cari');">Cari NIS</button>
+                                <input type="text" class="form-control" placeholder="NIS" id="input-nis-edit">
                             </div>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" placeholder="Nama" id="input-nama">
-                            </div>
-                            <div class="input-group">
-                                <input type="file" class="form-control" id="input-foto">
-                                <!-- <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Button</button> -->
+                            <div id="modal-edit-inputs">
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="button" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-primary" onclick="editStudent();">Simpan</button>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
+
     </div>
     <script>
         $(document).ready(function () {
             loadingAnim();
             detectTextInput();
             detectIdle();
+            getClassrooms("#input-kelas");
         });
     </script>
 </body>

@@ -1,5 +1,9 @@
 /static/assets/student-pictures
 /venv
+/logs
 /coba coba
 /db/post_periodic
+/db/img_paths.json
+/db/main.sql
+__pycache__
 .env
