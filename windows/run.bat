@@ -15,7 +15,9 @@ if not exist ".env" (
     timeout /t 3
     exit
 )
-start "" ./windows/upload_auto.bat
+cd windows
+start "" upload_auto.bat
+cd ..
 echo IP Address : 
 ipconfig | findstr /i "IPv4"
 echo Port : 5000
