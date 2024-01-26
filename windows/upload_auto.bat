@@ -10,6 +10,11 @@ if not exist "./venv" (
 ) else (
     call ./venv/Scripts/activate
 )
+if not exist ".env" (
+    echo No .env file found, please check again
+    timeout /t 3
+    exit
+)
 echo Script ini untuk mengupload absen hari ini ke erina
 :loop
 python ./lazy_attend.py

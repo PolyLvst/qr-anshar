@@ -1,6 +1,5 @@
 @echo off
 cd %CD%
-start "" upload_auto.bat
 cd ..
 if not exist "./venv" (
     echo Creating virtual environment...
@@ -11,6 +10,12 @@ if not exist "./venv" (
 ) else (
     call ./venv/Scripts/activate
 )
+if not exist ".env" (
+    echo No .env file found, please check again
+    timeout /t 3
+    exit
+)
+start "" ./windows/upload_auto.bat
 echo IP Address : 
 ipconfig | findstr /i "IPv4"
 echo Port : 5000
