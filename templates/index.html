@@ -102,7 +102,8 @@
                                     <input type="text" class="form-control" placeholder="Nama" id="input-nama" required>
                                 </div>
                                 <div class="input-group mb-2">
-                                    <select required class="form-select form-select-sm" aria-label="Small select example" placeholder="Kelas id" id="input-kelas">
+                                    <select required class="form-select form-select-sm"
+                                        aria-label="Small select example" placeholder="Kelas id" id="input-kelas">
                                         <option selected value="">Pilih - kelas</option>
                                         <option value=""> --- </option>
                                     </select>
@@ -116,6 +117,13 @@
                                 <button type="reset" class="btn btn-warning">Reset</button>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                                 <button type="button" class="btn btn-primary" onclick="addStudent();">Simpan</button>
+                            </div>
+                            <div class="my-3 mx-2">
+                                <div class="progress" style="display:none;">
+                                    <div class="progress-bar text-bg-success progress-bar-striped progress-bar-animated"
+                                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                                        style="width: 0%"></div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -141,6 +149,13 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                             <button type="button" class="btn btn-primary" onclick="editStudent();">Simpan</button>
+                        </div>
+                        <div class="my-3 mx-2">
+                            <div class="progress progress-edit" style="display:none;">
+                                <div class="progress-bar progress-bar-edit text-bg-success progress-bar-striped progress-bar-animated"
+                                    role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                                    style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

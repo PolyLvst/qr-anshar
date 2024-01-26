@@ -72,12 +72,24 @@ def _get_cache_class(curr):
         info[f"class-id-{id_c}"] = {"id":id_c,"class_name":c_name}
     return info
 
+cursor,conn = connect_db()
+cache:dict = _get_cache_users(cursor)
+cache_class:dict = _get_cache_class(cursor)
+cursor.close()
+conn.close()
+
+marked_students = []
+if not os.path.exists("static/assets/student-pictures"):
+    os.mkdir("static/assets/student-pictures")
+if not os.path.exists("./db/post_periodic"):
+    os.mkdir("./db/post_periodic")
+
 def _get_student_info(id):
     try:
         results = cache[f"stu-id-{id}"]
         return results
     except Exception as e:
-        print(f"Id not found - {e}")
+        # Id not found - {e}
         return None
     
 def _get_class_info(id):
@@ -85,7 +97,7 @@ def _get_class_info(id):
         results = cache_class[f"class-id-{id}"]
         return results
     except Exception as e:
-        print(f"Id not found - {e}")
+        # Id not found - {e}
         return None
     
 @app.route("/",methods=["GET"])
@@ -119,7 +131,7 @@ def get_name(id):
 def absen_siswa():
     nis = request.form.get("nis")
     if nis == None:
-        print("Unknown got none ... ")
+        # Unknown got none ...
         return jsonify({"status":"failed","msg":"Error, got None"})
     
     results = _get_student_info(nis)
@@ -135,7 +147,7 @@ def absen_siswa():
         with open(periodic_post,'r') as f:
             lazy_upload = json.load(f)
         if f_stu_id in lazy_upload:
-            print("Already marked [post_periodic]")
+            # Already marked [post_periodic]
             return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
         
     current_time = datetime.now().time()
@@ -284,15 +296,7 @@ def sign_in():
     return jsonify({"result": "success","token": token})
 
 if __name__ == "__main__":
-    cursor,conn = connect_db()
-    cache:dict = _get_cache_users(cursor)
-    cache_class:dict = _get_cache_class(cursor)
-    cursor.close()
-    conn.close()
-    
-    marked_students = []
-    if not os.path.exists("static/assets/student-pictures"):
-        os.mkdir("static/assets/student-pictures")
-    if not os.path.exists("./db/post_periodic"):
-        os.mkdir("./db/post_periodic")
-    app.run("0.0.0.0",5000,True)
+    # app.run("0.0.0.0",5000,True)
+    port = 5000
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=port)

@@ -54,6 +54,24 @@ function getClassrooms(targ_id) {
     });
 };
 
+function updateProgressBar(percentComplete) {
+    var progressBar = document.querySelector('.progress');
+    var progressBarValue = document.querySelector('.progress-bar');
+
+    progressBar.style.display = 'block';
+    progressBarValue.style.width = percentComplete.toFixed(2) + '%';
+    progressBarValue.innerHTML = percentComplete.toFixed(2) + '%';
+}
+
+function updateProgressBarEdit(percentComplete) {
+    var progressBar = document.querySelector('.progress-edit');
+    var progressBarValue = document.querySelector('.progress-bar-edit');
+
+    progressBar.style.display = 'block';
+    progressBarValue.style.width = percentComplete.toFixed(2) + '%';
+    progressBarValue.innerHTML = percentComplete.toFixed(2) + '%';
+}
+
 function addStudent() {
     let inputNis = $("#input-nis").val();
     let namaStu = $("#input-nama").val();
@@ -81,6 +99,16 @@ function addStudent() {
         "data": formData,
         contentType: false,
         processData: false,
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = (evt.loaded / evt.total) * 100;
+                    updateProgressBar(percentComplete);
+                }
+            }, false);
+            return xhr;
+        },
         success: function (response) {
             if (response["status"] == "success") {
                 alert(response["msg"]);
@@ -89,6 +117,8 @@ function addStudent() {
             } else {
                 window.location.href = "/login";
             }
+            // Reset the progress bar after the upload is complete
+            updateProgressBar(0);
         }
     });
 };
@@ -120,6 +150,16 @@ function editStudent() {
         "data": formData,
         contentType: false,
         processData: false,
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = (evt.loaded / evt.total) * 100;
+                    updateProgressBarEdit(percentComplete);
+                }
+            }, false);
+            return xhr;
+        },
         success: function (response) {
             if (response["status"] == "success") {
                 alert(response["msg"]);
@@ -128,6 +168,7 @@ function editStudent() {
             } else {
                 window.location.href = "/login";
             }
+            updateProgressBarEdit(0);
         }
     });
 };
@@ -147,7 +188,7 @@ function checkIdExist(target_id, mode = "check") {
             inputNis.removeClass("is-invalid");
             let tempHtml;
             let tempHtmlClass;
-            if (response["data"]){
+            if (response["data"]) {
                 let nama = response["data"]["name"];
                 let kelas = response["data"]["class"];
                 let kelas_id = response["data"]["class_id"];
