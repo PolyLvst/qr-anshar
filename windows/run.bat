@@ -16,10 +16,9 @@ if not exist ".env" (
     exit
 )
 cd windows
-start "" upload_auto.bat
+start /B upload_auto.bat
 cd ..
+start /B waitress-serve --listen=0.0.0.0:5000 app:app
 echo IP Address : 
 ipconfig | findstr /i "IPv4"
 echo Port : 5000
-waitress-serve --listen=0.0.0.0:5000 app:app
-timeout /t 3

@@ -15,8 +15,8 @@ if not exist ".env" (
     timeout /t 3
     exit
 )
-echo Script ini untuk mengupload absen hari ini ke erina
+@REM echo Script ini untuk mengupload absen hari ini ke erina
 :loop
 python ./lazy_attend.py
-ping 127.0.0.1 -n 4 > nul
+ping 127.0.0.1 -n 2 > nul
 goto loop

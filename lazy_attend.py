@@ -88,7 +88,7 @@ if os.path.exists(periodic_post):
         if len(payloads) <= 0:
             complete=True
     if len(cur_marked_id) == 0:
-        print('Listening .. [lazy_attend.py]')
+        print('Menunggu absen baru .. [lazy_attend.py]')
         logger.Log_write('Listening ..')
         exit()
     print('All posted .. ')
@@ -98,6 +98,6 @@ if os.path.exists(periodic_post):
 
 # Jika belum ada file post_periodic
 else:
-    print('Listening .. [lazy_attend.py]')
+    print('Menunggu absen hari ini .. [lazy_attend.py]')
     logger.Log_write('Listening .. [No post periodic file generated yet]')
     # sleep(3)
