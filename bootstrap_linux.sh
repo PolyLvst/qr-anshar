@@ -63,11 +63,19 @@ if [ -f "$env_file" ]; then
 else
     echo "File .env does not exist."
 fi
+xampp_path="/opt/lampp/xampp"
+if [ -f "$xampp_path" ]; then
+    echo "xampp ready to be used"
+else
+    echo "#### Warning xampp is missing ####"
+fi
 crontab_main="$script_directory/crontab.txt"
 echo "Buka terminal lalu ketik crontab -e"> $crontab_main
 echo "Copy & Paste :">> $crontab_main
 # Change the path for web_server
 echo "@reboot sleep 30;cd $script_directory;XDG_RUNTIME_DIR=/run/user/$(id -u) $script_directory/linux/run.sh >> $script_directory/logs/logs_cron.txt 2>&1">> $crontab_main
+# Change the path for xampp
+echo "@reboot sleep 30;cd $script_directory;XDG_RUNTIME_DIR=/run/user/$(id -u) sudo $xampp_path startmysql >> $script_directory/logs/logs_cron.txt 2>&1">> $crontab_main
 # Change the path for lazy_attend.py
 echo "*/5 * * * 1-6 cd $script_directory && $script_directory/lazy_attend.py >> $script_directory/logs/logs_cron.txt 2>&1">> $crontab_main
 # echo "Crontab.txt is ready to be copied by user"
