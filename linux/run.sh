@@ -17,8 +17,8 @@ else
 fi
 
 echo $(date)>>./logs/logs_cron.txt
-web_server_py="python -m gunicorn -w 1 -b 0.0.0.0:5000 app:app"
-lazy_attend="$script_directory/lazy_attend.py"
+web_server_py="python3 -m gunicorn -w 1 -b 0.0.0.0:5000 app:app"
+lazy_attend="./lazy_attend.py"
 $web_server_py
 echo "Closing, please wait [5s]"
 echo "Uploading remaining students"

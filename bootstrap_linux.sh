@@ -57,10 +57,11 @@ echo "Installing requirements"
 pip install -r $script_directory/requirements.txt
 
 # Check if the .env file exists
+env_file="./.env"
 if [ -f "$env_file" ]; then
     echo ".env file exist"
 else
-    echo "File $env_file does not exist."
+    echo "File .env does not exist."
 fi
 crontab_main="$script_directory/crontab.txt"
 echo "Buka terminal lalu ketik crontab -e"> $crontab_main
