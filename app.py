@@ -11,7 +11,7 @@ import re
 
 app = Flask(__name__)
 
-load_dotenv()
+load_dotenv(override=True)
 HOST_DB = os.environ.get("HOST_DB")
 USER_DB = os.environ.get("USER_DB")
 PASS_DB = os.environ.get("PASS_DB")
