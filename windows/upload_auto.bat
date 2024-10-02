@@ -18,5 +18,5 @@ if not exist ".env" (
 @REM echo Script ini untuk mengupload absen hari ini ke erina
 :loop
 python ./lazy_attend.py
-ping 127.0.0.1 -n 2 > nul
+ping 127.0.0.1 -n 10 > nul
 goto loop

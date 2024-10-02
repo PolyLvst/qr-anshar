@@ -60,8 +60,7 @@ if os.path.exists(periodic_post):
                     post_periodic_this_week[key]["posted"] = file_path
                 else:
                     post_periodic_this_week[key] =  {"posted":file_path}
-            print(f"{file_name} is generated this week, adding to check for incomplete uploads ...")
-            logger.Log_write(f'added to check list {file_name} - check 1 week post_periodic','info')
+            logger.Log_write(f"{file_name} is generated this week, adding to check for incomplete uploads ...")
     # Simulate already posted today, uncomment this
     # with open(posted_ids,'wb') as f:
     #     pickle.dump([
@@ -125,8 +124,7 @@ if os.path.exists(periodic_post):
             if len(payloads) <= 0:
                 complete=True
         if len(cur_marked_id) == 0:
-            print('Menunggu absen baru .. [lazy_attend.py]')
-            logger.Log_write('Listening ..')
+            logger.Log_write(f'Listening [0 marked id] [{post_periodic}]..')
             continue
         print('All posted .. ')
         logger.Log_write('All posted, storing to .checkpoint')
@@ -136,7 +134,8 @@ if os.path.exists(periodic_post):
         else:
             with open(f"./db/post_periodic/posted{day_week}.checkpoint",'wb') as f:
                 pickle.dump(marked_ids,f)
-
+    print('Menunggu absen baru .. [lazy_attend.py]')
+    logger.Log_write('Listening ..')
 # Jika belum ada file post_periodic
 else:
     print('Menunggu absen hari ini .. [lazy_attend.py]')
