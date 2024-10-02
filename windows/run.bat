@@ -17,6 +17,7 @@ if not exist ".env" (
 )
 cd windows
 start /B upload_auto.bat
+start /B auto_download_gdrive.bat
 cd ..
 start /B waitress-serve --listen=0.0.0.0:5000 app:app
 echo IP Address : 

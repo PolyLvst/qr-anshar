@@ -41,6 +41,9 @@ WIN + R
 shell:startup
 ```
 
+**Auto download gdrive**
+Cek perintah di script auto_download_gdrive.bat
+
 ## Usage
 Klik ikon di desktop atau run langsung run.sh
 ```bash

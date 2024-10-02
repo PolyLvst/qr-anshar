@@ -34,8 +34,7 @@ now = datetime.now()
 formatted_time = now.strftime("%d-%m-%Y")
 # logger = write_some_log(f'./logs/{formatted_time}.log','db.py')
 periodic_post = f"./db/post_periodic/post_periodic{formatted_time}.json"
-img_paths = "./db/img_paths.json"
-allowed_ext = {'png', 'jpg', 'jpeg', 'gif'}
+allowed_ext = {'png', 'jpg', 'jpeg'}
 
 def connect_db():
     try:
@@ -121,7 +120,7 @@ def get_name(id):
         "data":{"name":results.get("nama"),
                 "class":class_stu,
                 "class_id":id_class,
-                "img_path":results.get("img_path"),},
+                },
         "status":"oke",
         "msg":"success"
         }
