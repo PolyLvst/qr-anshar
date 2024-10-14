@@ -21,218 +21,45 @@ function loadingAnim() {
     animateLoadingDots();
 };
 
+const checkImage = (url, callback) => {
+    const img = new Image();
+    img.onload = () => callback(true);
+    img.onerror = () => callback(false);
+    img.src = url;
+};
+
 function loadStudentPicture(id) {
     const pictureBox = $("#picture-box");
-    let tempHtml = `<div class="image-container-murid">
-                        <img src='../static/assets/student-pictures/${id}.jpg' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
-                    </div>`;
-    pictureBox.empty();
-    pictureBox.append(tempHtml);
-};
+    const pngUrl = `../static/assets/student-pictures/${id}.png`;
+    const jpgUrl = `../static/assets/student-pictures/${id}.jpg`;
+    let tempHtml;
 
-function getClassrooms(targ_id) {
-    const classSelects = $(targ_id);
-
-    let tempHtml = `<option selected value="">Pilih - kelas</option>`;
-    classSelects.empty();
-    classSelects.append(tempHtml);
-    let url = "/api/get_classrooms";
-    $.ajax({
-        "type": "GET",
-        "url": url,
-        "data": {},
-        success: function (response) {
-            let classes = response["data"];
-            // console.log(classes);
-            for (let key in classes) {
-                let value_id = classes[key]["id"];
-                let value_name = classes[key]["class_name"];
-                let tempHtml = `<option value="${value_id}">${value_name}</option>`;
-                classSelects.append(tempHtml);
-            };
-        }
-    });
-};
-
-function updateProgressBar(percentComplete) {
-    var progressBar = document.querySelector('.progress');
-    var progressBarValue = document.querySelector('.progress-bar');
-
-    progressBar.style.display = 'block';
-    progressBarValue.style.width = percentComplete.toFixed(2) + '%';
-    progressBarValue.innerHTML = percentComplete.toFixed(2) + '%';
-}
-
-function updateProgressBarEdit(percentComplete) {
-    var progressBar = document.querySelector('.progress-edit');
-    var progressBarValue = document.querySelector('.progress-bar-edit');
-
-    progressBar.style.display = 'block';
-    progressBarValue.style.width = percentComplete.toFixed(2) + '%';
-    progressBarValue.innerHTML = percentComplete.toFixed(2) + '%';
-}
-
-function addStudent() {
-    let inputNis = $("#input-nis").val();
-    let namaStu = $("#input-nama").val();
-    let idKelas = $("#input-kelas").val();
-    let fileImg = $("#input-foto").prop("files")[0];
-
-    let is_alert = "";
-    if (!inputNis) { is_alert += "masukkan nis " }
-    if (!namaStu) { is_alert += "masukkan nama " }
-    if (idKelas == "") { is_alert += "pilih kelas " }
-    if (!fileImg) { is_alert += "pilih foto " }
-    if (is_alert) {
-        alert(is_alert);
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("nis", inputNis);
-    formData.append("nama", namaStu);
-    formData.append("kelas", idKelas);
-    formData.append("file", fileImg);
-    $.ajax({
-        "type": "POST",
-        "url": "/api/add_student",
-        "data": formData,
-        contentType: false,
-        processData: false,
-        xhr: function () {
-            var xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (evt) {
-                if (evt.lengthComputable) {
-                    var percentComplete = (evt.loaded / evt.total) * 100;
-                    updateProgressBar(percentComplete);
-                }
-            }, false);
-            return xhr;
-        },
-        success: function (response) {
-            if (response["status"] == "success") {
-                alert(response["msg"]);
-            } else if (response["status"] == "failed") {
-                alert(response["msg"]);
-            } else {
-                window.location.href = "/login";
-            }
-            // Reset the progress bar after the upload is complete
-            updateProgressBar(0);
-        }
-    });
-};
-
-function editStudent() {
-    let inputNis = $("#input-nis-edit").val();
-    let namaStu = $("#input-nama-edit").val();
-    let idKelas = $("#input-kelas-edit").val();
-    let fileImg = $("#input-foto-edit").prop("files")[0];
-
-    let is_alert = "";
-    if (!inputNis) { is_alert += "masukkan nis " }
-    if (!namaStu) { is_alert += "masukkan nama " }
-    if (idKelas == "") { is_alert += "pilih kelas " }
-    // if (!fileImg) { is_alert += "pilih foto " }
-    if (is_alert) {
-        alert(is_alert);
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("nis", inputNis);
-    formData.append("nama", namaStu);
-    formData.append("kelas", idKelas);
-    formData.append("file", fileImg);
-    $.ajax({
-        "type": "POST",
-        "url": "/api/edit_student",
-        "data": formData,
-        contentType: false,
-        processData: false,
-        xhr: function () {
-            var xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (evt) {
-                if (evt.lengthComputable) {
-                    var percentComplete = (evt.loaded / evt.total) * 100;
-                    updateProgressBarEdit(percentComplete);
-                }
-            }, false);
-            return xhr;
-        },
-        success: function (response) {
-            if (response["status"] == "success") {
-                alert(response["msg"]);
-            } else if (response["status"] == "failed") {
-                alert(response["msg"]);
-            } else {
-                window.location.href = "/login";
-            }
-            updateProgressBarEdit(0);
-        }
-    });
-};
-
-function checkIdExist(target_id, mode = "check") {
-    // #input-nis
-    let id = $(target_id).val()
-    let url = "/api/getid/" + id;
-    $.ajax({
-        "type": "GET",
-        "url": url,
-        "data": {},
-        success: function (response) {
-            const inputNis = $(target_id);
-            const modalEdit = $("#modal-edit-inputs");
-            inputNis.removeClass("is-valid");
-            inputNis.removeClass("is-invalid");
-            let tempHtml;
-            let tempHtmlClass;
-            if (response["data"]) {
-                let nama = response["data"]["name"];
-                let kelas = response["data"]["class"];
-                let kelas_id = response["data"]["class_id"];
-                tempHtml = `
-                <div class="input-group mb-2">
-                    <input type="text" class="form-control" placeholder="Nama" id="input-nama-edit" value="${nama}">
-                </div>
-                <div class="input-group mb-2">
-                    <select required class="form-select form-select-sm" aria-label="Small select example" placeholder="Kelas id" id="input-kelas-edit">
-                    </select>
-                </div>
-                <div class="input-group">
-                    <input type="file" class="form-control" id="input-foto-edit">
-                </div>
-                `;
-                tempHtmlClass = `<option selected value="${kelas_id}">${kelas}</option>`;
-            }
-            if (response["status"] == "oke") {
-                if (mode == "check") {
-                    // Siswa sudah ada di database, id terpakai
-                    inputNis.addClass("is-invalid");
+    // Try loading .jpg first
+    checkImage(jpgUrl, (exists) => {
+        if (exists) {
+            tempHtml = `<div class="image-container-murid">
+            <img src='../static/assets/student-pictures/${id}.jpg' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+            </div>`;
+            pictureBox.empty();
+            pictureBox.append(tempHtml);
+        } else {
+            // Fallback to .png if .jpg doesn't exist
+            checkImage(pngUrl, (exists) => {
+                if (exists) {
+                    tempHtml = `<div class="image-container-murid">
+                                    <img src='../static/assets/student-pictures/${id}.png' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+                                </div>`;
                 } else {
-                    // Mode cari nis, id valid dan ada di database
-                    inputNis.addClass("is-valid");
-                    modalEdit.empty();
-                    modalEdit.append(tempHtml);
-                    getClassrooms("#input-kelas-edit");
-                    $('#input-kelas-edit').append(tempHtmlClass);
+                    // Handle case if no image exists
+                    tempHtml = `<div class="image-container-murid">
+                                        <img src="../static/assets/person-bounding-box.svg" alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+                                    </div>`;
                 }
-            } else {
-                if (mode == "check") {
-                    // Siswa sudah ada di database, id dapat dipakai untuk siswa baru
-                    inputNis.addClass("is-valid");
-                } else {
-                    // Mode cari nis, id valid dan ada di database
-                    inputNis.addClass("is-invalid");
-                    modalEdit.empty();
-                    modalEdit.append(tempHtml);
-                    getClassrooms("#input-kelas-edit");
-                    $('#input-kelas-edit').append(tempHtmlClass);
-                }
-            };
+                pictureBox.empty();
+                pictureBox.append(tempHtml);
+            });
         }
-    })
+    });
 };
 
 function getNameById(id) {
@@ -259,11 +86,10 @@ function getNameById(id) {
                 absenSiswa(id);
                 let data = response["data"];
                 let name = data["name"];
-                let classStu = data["class"];
                 loadStudentPicture(id);
                 let tempHtml = `
                 <h5>Selamat datang ${name}<h5>
-                <p>Kelas ${classStu}<p>
+                </br>
                 `;
                 welcomeSection.append(tempHtml);
             } else {
@@ -410,52 +236,3 @@ function playSound(src) {
     var audio = new Audio(src);
     audio.play();
 };
-
-function sign_in() {
-    let username = $("#input-username").val();
-    let password = $("#input-password").val();
-
-    if (username === "") {
-        $("#help-id-login").text("Enter your id.");
-        $("#input-username").focus();
-        return;
-    } else {
-        $("#help-id-login").text("");
-    }
-
-    if (password === "") {
-        $("#help-password-login").text("Enter your password.");
-        $("#input-password").focus();
-        return;
-    } else {
-        $("#help-password-login").text("");
-    }
-    $.ajax({
-        type: "POST",
-        url: "/sign_in",
-        data: {
-            'username_give': username,
-            'password_give': password,
-        },
-        success: function (response) {
-            if (response["result"] === "success") {
-                let token = response['token'];
-                $.cookie("token", token, { path: "/" });
-                alert('Login successfully');
-                window.location.replace("/");
-            } else {
-                alert(response["msg"]);
-            };
-        },
-    });
-};
-
-function deleteCookie(name) {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-}
-
-function logout() {
-    deleteCookie("token");
-    alert("Logout success")
-    window.location.href = "/";
-}
