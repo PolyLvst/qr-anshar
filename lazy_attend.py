@@ -25,10 +25,8 @@ check_this_week_seconds = 7 * 24 * 60 * 60
 
 load_dotenv()
 find_this = os.environ
-# JAM_TERAKHIR_MASUK = find_this['JAM_TERAKHIR_MASUK']
 # API anshar
 API_URL = find_this['API_URL']
-# time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
 post_periodic_this_week = {}
 for file_name in os.listdir('./db/post_periodic'):
@@ -60,17 +58,9 @@ for file_name in os.listdir('./db/post_periodic'):
             else:
                 post_periodic_this_week[key] =  {"posted":file_path}
         logger.Log_write(f"{file_name} is generated this week, adding to check for incomplete uploads ...")
-# Simulate already posted today, uncomment this
-# with open(posted_ids,'wb') as f:
-#     pickle.dump([
-#         "stu-id-2221",
-#         "stu-id-2220",
-#         "stu-id-2219",
-#         "stu-id-2218"],f)
 logger.Log_write(f"{post_periodic_this_week.keys()}")
 unique_nis_notif = []
 for day_week,post_values in post_periodic_this_week.items():
-    # print(f'Jam masuk : {JAM_TERAKHIR_MASUK}')
     post_periodic = post_values.get("post_periodic",False)
     posted = post_values.get("posted",False)
     if post_periodic:
@@ -94,21 +84,16 @@ for day_week,post_values in post_periodic_this_week.items():
         for key,value in payloads.items():
             if key in marked_ids:
                 continue
-            # id_stu = int(value.get("id"))
             id_stu = value.get("id")
             tipe = value.get("tipe")
             time_attend = value.get("time")
             
-            # time_date_format = datetime.strptime(time_attend,'%H:%M:%S')
-            # Jika waktu masuk siswa > waktu telat maka tipe = TELAT
-            # if time_date_format > time1:
-            #     print(f'id : {id_stu} tipe : TELAT time : {time_attend}')
-            #     logger.Log_write(f'id : {id_stu} tipe : TELAT time : {time_attend}')
-            #     tipe = 'TELAT'
-            # else:
             print(f'id : {id_stu} tipe : HADIR time : {time_attend}')
             logger.Log_write(f'id : {id_stu} tipe : HADIR time : {time_attend} Key : {key}')
             # post the payload
+            # There is a bug in api anshar when we pass time to them, they use their own time, instead of ours.
+            # For example there is an internet outage and lazy_attend cache it locally first, trying to connect to interet.
+            # When internet is restored the time attend stored in lazy_attend is not use by api anshar, instead they use datetime.now() at the backend
             r = requests.post(API_URL,{'id':id_stu,'tipe':tipe,'time':time_attend})
             if r.status_code >= 200 and r.status_code <=299:
                 marked_ids.append(key)

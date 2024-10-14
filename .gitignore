@@ -8,3 +8,4 @@
 release_archive.zip
 __pycache__
 .env
+main.json
