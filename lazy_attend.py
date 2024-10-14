@@ -68,6 +68,7 @@ for file_name in os.listdir('./db/post_periodic'):
 #         "stu-id-2219",
 #         "stu-id-2218"],f)
 logger.Log_write(f"{post_periodic_this_week.keys()}")
+unique_nis_notif = []
 for day_week,post_values in post_periodic_this_week.items():
     # print(f'Jam masuk : {JAM_TERAKHIR_MASUK}')
     post_periodic = post_values.get("post_periodic",False)
@@ -119,6 +120,12 @@ for day_week,post_values in post_periodic_this_week.items():
             # Simulate success post, uncomment this
             # marked_ids.append(key)
             # cur_marked_id.append(key)
+            if key not in unique_nis_notif:
+                print("Sending notif ...")
+                # ----------- TODO ------------ #
+                # Add send notif to backend
+                logger.Log_write(f"Sending notif once for nis : {key}")
+                unique_nis_notif.append(key)
         # Pop id yang telah terkirim
         for xid in marked_ids:
             payloads.pop(xid)
