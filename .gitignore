@@ -2,6 +2,7 @@
 /venv
 /logs
 /coba coba
+/import_dapodik
 /db/post_periodic
 /db/img_paths.json
 /db/main.sql

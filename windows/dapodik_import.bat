@@ -15,13 +15,4 @@ if not exist ".env" (
     timeout /t 3
     exit
 )
-cd windows
-call auto_download_gdrive.bat
-call dapodik_import.bat
-cd windows
-start /B upload_auto.bat
-cd ..
-start /B waitress-serve --listen=0.0.0.0:5000 app:app
-echo IP Address : 
-ipconfig | findstr /i "IPv4"
-echo Port : 5000
+python ./dapodik_import.py
