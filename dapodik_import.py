@@ -51,28 +51,44 @@ class LowDapodikImport:
     
     def process_and_dump_to(self, output_path:str):
         if self.__is_changed_file():
-            loaded = self.__load_from_xlsx()
+            load = self.__check_if_output_already_exist(output_path = output_path)
+            loaded = self.__load_from_xlsx(load_existing = load)
             with open(output_path,"w") as f:
                 json.dump(loaded,f)
             print(f"{Fore.CYAN}>> Imported ...")
         else:
             # Up To Date
             print(f"{Fore.CYAN}>> No changes from import dapodik yet ...")
+
+    def __check_if_output_already_exist(self, output_path):
+        if not os.path.exists(output_path):
+            return {}
+        with open(output_path,"r") as f:
+            return json.load(f)
     
-    def __load_from_xlsx(self):
+    def __load_from_xlsx(self, load_existing):
         workbook = load_workbook(self.__excel_path)
         worksheet = workbook.active
-        load = {}
-        for row in worksheet.iter_rows(values_only=True):
+        load = load_existing
+        rows_skipped = 0
+        skipped_index = []
+        for row_num,row in enumerate(worksheet.iter_rows(values_only=True)):
             try:
-                nomer_induk_siswa = int(row[self.__column_nis])
-                nama_siswa = str(row[self.__column_name])
-                load[f"stu-id-{nomer_induk_siswa}"] = {"nama":nama_siswa}
+                if row[0]:
+                    nomer_induk_siswa = int(row[self.__column_nis])
+                    nama_siswa = str(row[self.__column_name])
+                    load[f"stu-id-{nomer_induk_siswa}"] = {"nama":nama_siswa}
+                else:
+                    rows_skipped+=1
+                    skipped_index.append(row_num)
             except Exception as e:
+                print(e)
                 print(f"{Fore.RED}>> Error wrong data type [dapodik_import]")
                 print(f"{Fore.RED}>> Check column name .env or possible defect dapodik")
                 workbook.close()
                 exit(1)
+        if rows_skipped:
+            print(f"{Fore.YELLOW}>> Encountered none values, skipped rows : {rows_skipped} at indices : {skipped_index}")
         workbook.close()
         return load
 
