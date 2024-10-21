@@ -1,3 +1,4 @@
+import subprocess
 from openpyxl import load_workbook
 from openpyxl.utils import column_index_from_string
 from dotenv import load_dotenv
@@ -33,6 +34,11 @@ class LowDapodikImport:
         self.__column_name = 0
         self.__generated_hash = f"./{self.__import_folder}/prev_sha256.json"
         self.__excel_folder = f"./{self.__import_folder}/excel"
+        self.__rclone_invoke = ["rclone", "sync", "-v", "--retries", "10"]
+        self.__var_sync_foto = ""
+        self.__var_sync_excel = ""
+        self.__init_default_sync_foto("anshar:QRAnsharFoto")
+        self.__init_default_sync_excel("anshar:QRAnsharDapodik")
 
     def set_excel_path(self, file_path:str):
         if not os.path.exists(self.__import_folder):
@@ -50,6 +56,9 @@ class LowDapodikImport:
         self.__column_name = column_index_from_string(column_name) - 1
     
     def process_and_dump_to(self, output_path:str):
+        print(f"{Fore.CYAN}>> Checking for new file from google drive ...")
+        self.__sync_foto()
+        self.__sync_excel()
         if self.__is_changed_file():
             load = self.__check_if_output_already_exist(output_path = output_path)
             loaded = self.__load_from_xlsx(load_existing = load)
@@ -59,6 +68,18 @@ class LowDapodikImport:
         else:
             # Up To Date
             print(f"{Fore.CYAN}>> No changes from import dapodik yet ...")
+
+    def modify_sync_foto(self, download_to:str, remote:str, remote_folder:str = "QRAnsharFoto"):
+        self.__var_sync_foto = [f"{remote}:{remote_folder}",f"{download_to}"]
+
+    def modify_sync_excel(self, download_to:str, remote:str, remote_folder:str = "QRAnsharExcel"):
+        self.__var_sync_excel = [f"{remote}:{remote_folder}",f"{download_to}"]
+
+    def __init_default_sync_foto(self, remote_and_remote_folder):
+        self.__var_sync_foto = [f"{remote_and_remote_folder}",f"{os.path.join(os.getcwd(),'static/assets/student-pictures')}"]
+
+    def __init_default_sync_excel(self, remote_and_remote_folder):
+        self.__var_sync_excel = [f"{remote_and_remote_folder}",f"{os.path.join(os.getcwd(),'import_dapodik/excel')}"]
 
     def __check_if_output_already_exist(self, output_path):
         if not os.path.exists(output_path):
@@ -116,6 +137,26 @@ class LowDapodikImport:
             with open(self.__generated_hash,"r") as f:
                 return json.load(f)
         return {"sha256":"init"}
+
+    def __sync_foto(self):
+        sync_foto = self.__rclone_invoke + self.__var_sync_foto
+        return self.__run_command(sync_foto)
+
+    def __sync_excel(self):
+        sync_excel = self.__rclone_invoke + self.__var_sync_excel
+        return self.__run_command(sync_excel, is_wait = True)
+
+    def __run_command(self, command, is_wait = False):
+        try:
+            if is_wait:
+                print(f"{Fore.YELLOW}>> Waiting for important sync to finish ...")
+                subprocess.Popen(command).wait()
+            else:
+                print(f"{Fore.YELLOW}>> Sync started and not waited ...")
+                subprocess.Popen(command)
+        except Exception as e:
+            print(f"{Fore.RED}>> Something went wrong in run command")
+            print(f"{Fore.RED}>> Error: {e}")
 
 if __name__ == "__main__":
     dpdk = DapodikImport()

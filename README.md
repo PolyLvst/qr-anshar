@@ -30,10 +30,10 @@ shell:startup
 ```
 
 **Auto download gdrive**
-Cek perintah di script auto_download_gdrive.bat
+Lakukan rclone config dengan memilih google drive, beri nama remote nya sebagai ```anshar```
 
 **Untuk mengupload foto dan excel**
-Persiapkan folder QR_Anshar_Foto dan QR_Anshar_Dapodik pada google drive\
+Persiapkan folder QRAnsharFoto dan QRAnsharDapodik pada google drive\
 Pastikan folder ada di paling depan (tidak di dalam folder lain)\
 Masukkan foto ke folder terkait dengan format nis.jpg atau nis.png\
 Masukkan file excel dapodik ke folder terkait dengan nama dapodik.xlsx, file lain akan di abaikan

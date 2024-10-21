@@ -16,7 +16,6 @@ if not exist ".env" (
     exit
 )
 cd windows
-call auto_download_gdrive.bat
 call dapodik_import.bat
 cd windows
 start /B upload_auto.bat
