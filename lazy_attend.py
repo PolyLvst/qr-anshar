@@ -30,6 +30,9 @@ find_this = os.environ
 API_URL = find_this['API_URL']
 # time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
+if not os.path.exists("./db/post_periodic"):
+    os.mkdir("./db/post_periodic")
+
 post_periodic_this_week = {}
 for file_name in os.listdir('./db/post_periodic'):
     file_path = os.path.join('./db/post_periodic',file_name)

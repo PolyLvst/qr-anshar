@@ -21,13 +21,45 @@ function loadingAnim() {
     animateLoadingDots();
 };
 
+const checkImage = (url, callback) => {
+    const img = new Image();
+    img.onload = () => callback(true);
+    img.onerror = () => callback(false);
+    img.src = url;
+};
+
 function loadStudentPicture(id) {
     const pictureBox = $("#picture-box");
-    let tempHtml = `<div class="image-container-murid">
-                        <img src='../static/assets/student-pictures/${id}.jpg' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
-                    </div>`;
-    pictureBox.empty();
-    pictureBox.append(tempHtml);
+    const pngUrl = `../static/assets/student-pictures/${id}.png`;
+    const jpgUrl = `../static/assets/student-pictures/${id}.jpg`;
+    let tempHtml;
+
+    // Try loading .jpg first
+    checkImage(jpgUrl, (exists) => {
+        if (exists) {
+            tempHtml = `<div class="image-container-murid">
+            <img src='../static/assets/student-pictures/${id}.jpg' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+            </div>`;
+            pictureBox.empty();
+            pictureBox.append(tempHtml);
+        } else {
+            // Fallback to .png if .jpg doesn't exist
+            checkImage(pngUrl, (exists) => {
+                if (exists) {
+                    tempHtml = `<div class="image-container-murid">
+                                    <img src='../static/assets/student-pictures/${id}.png' alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+                                </div>`;
+                } else {
+                    // Handle case if no image exists
+                    tempHtml = `<div class="image-container-murid">
+                                        <img src="../static/assets/person-bounding-box.svg" alt="" id="picture-student" class="profile-icon rounded mx-auto d-block">
+                                    </div>`;
+                }
+                pictureBox.empty();
+                pictureBox.append(tempHtml);
+            });
+        }
+    });
 };
 
 function getClassrooms(targ_id) {
