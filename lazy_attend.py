@@ -29,6 +29,8 @@ find_this = os.environ
 # API anshar
 API_URL = find_this['API_URL']
 API_URL_BACKEND_WA = find_this['API_URL_BACKEND_WA']
+EMAIL_ADMIN = find_this['EMAIL_ADMIN']
+PASSWORD_ADMIN = find_this['PASSWORD_ADMIN']
 # time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
 if not os.path.exists("./db/post_periodic"):
@@ -126,8 +128,10 @@ for day_week,post_values in post_periodic_this_week.items():
             # cur_marked_id.append(key)
             if key not in unique_nis_notif:
                 print("Sending notif ...")
+                current_session = requests.Session()
                 logger.Log_write(f"Sending notif once for nis : {key}")
-                r = requests.post(API_URL_BACKEND_WA,{'nis':id_stu})
+                current_session.post(f"{API_URL_BACKEND_WA}/login",json={'email':EMAIL_ADMIN,'password':PASSWORD_ADMIN})
+                r = current_session.post(f"{API_URL_BACKEND_WA}/absensi",json={'nis':id_stu})
                 if r.status_code >= 200 and r.status_code <=299:
                     unique_nis_notif.append(key)
                 elif r.status_code >= 400 and r.status_code <= 499:
