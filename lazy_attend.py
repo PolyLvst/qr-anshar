@@ -28,6 +28,7 @@ find_this = os.environ
 # JAM_TERAKHIR_MASUK = find_this['JAM_TERAKHIR_MASUK']
 # API anshar
 API_URL = find_this['API_URL']
+API_URL_BACKEND_WA = find_this['API_URL_BACKEND_WA']
 # time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
 if not os.path.exists("./db/post_periodic"):
@@ -125,10 +126,17 @@ for day_week,post_values in post_periodic_this_week.items():
             # cur_marked_id.append(key)
             if key not in unique_nis_notif:
                 print("Sending notif ...")
-                # ----------- TODO ------------ #
-                # Add send notif to backend
                 logger.Log_write(f"Sending notif once for nis : {key}")
-                unique_nis_notif.append(key)
+                r = requests.post(API_URL_BACKEND_WA,{'nis':id_stu})
+                if r.status_code >= 200 and r.status_code <=299:
+                    unique_nis_notif.append(key)
+                elif r.status_code >= 400 and r.status_code <= 499:
+                    print(r.text)
+                    logger.Log_write(f'Key : {key} got {r.text} possibly ortu not found','error')
+                    unique_nis_notif.append(key)
+                else:
+                    print(r.text)
+                    logger.Log_write(f'Key : {key} got {r.text}','error')
         # Pop id yang telah terkirim
         for xid in marked_ids:
             payloads.pop(xid)
