@@ -5,6 +5,7 @@ from time import sleep
 from dotenv import load_dotenv
 from datetime import datetime
 from logwriter import write_some_log
+from lazy_attend_utils import MyUtils
 import pickle
 import time
 import os
@@ -33,8 +34,20 @@ EMAIL_ADMIN = find_this['EMAIL_ADMIN']
 PASSWORD_ADMIN = find_this['PASSWORD_ADMIN']
 # time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
+lazy_attend_util = MyUtils()
+
 if not os.path.exists("./db/post_periodic"):
     os.mkdir("./db/post_periodic")
+
+current_session = requests.Session()
+is_expired_cookie = lazy_attend_util.is_expired()
+if not is_expired_cookie:
+    print(">> Getting cookie ...")
+    lazy_attend_util.login_and_save_new_cookie(API_URL_BACKEND_WA, EMAIL_ADMIN, PASSWORD_ADMIN)
+else:
+    print(">> Loaded saved cookie ...")
+    prev_cookie = lazy_attend_util.load_previous_cookie()
+    current_session.cookies.update(prev_cookie)
 
 post_periodic_this_week = {}
 for file_name in os.listdir('./db/post_periodic'):
@@ -128,11 +141,11 @@ for day_week,post_values in post_periodic_this_week.items():
             # cur_marked_id.append(key)
             if key not in unique_nis_notif:
                 print("Sending notif ...")
-                current_session = requests.Session()
                 logger.Log_write(f"Sending notif once for nis : {key}")
-                current_session.post(f"{API_URL_BACKEND_WA}/login",json={'email':EMAIL_ADMIN,'password':PASSWORD_ADMIN})
                 r = current_session.post(f"{API_URL_BACKEND_WA}/absensi",json={'nis':id_stu})
                 if r.status_code >= 200 and r.status_code <=299:
+                    print(f"Key : {key} Notif sent")
+                    logger.Log_write(f'Key : {key} Notif sent')
                     unique_nis_notif.append(key)
                 elif r.status_code >= 400 and r.status_code <= 499:
                     print(r.text)

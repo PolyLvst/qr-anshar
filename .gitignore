@@ -8,3 +8,5 @@
 release_archive.zip
 __pycache__
 .env
+cookie.json
+qr_cards/outputs
