@@ -44,6 +44,8 @@ is_expired_cookie = lazy_attend_util.is_expired()
 if not is_expired_cookie:
     print(">> Getting cookie ...")
     lazy_attend_util.login_and_save_new_cookie(API_URL_BACKEND_WA, EMAIL_ADMIN, PASSWORD_ADMIN)
+    prev_cookie = lazy_attend_util.load_previous_cookie()
+    current_session.cookies.update(prev_cookie)
 else:
     print(">> Loaded saved cookie ...")
     prev_cookie = lazy_attend_util.load_previous_cookie()
@@ -82,10 +84,10 @@ for file_name in os.listdir('./db/post_periodic'):
 # Simulate already posted today, uncomment this
 # with open(posted_ids,'wb') as f:
 #     pickle.dump([
-#         "stu-id-2221",
-#         "stu-id-2220",
-#         "stu-id-2219",
-#         "stu-id-2218"],f)
+#         "stu-nis-2221",
+#         "stu-nis-2220",
+#         "stu-nis-2219",
+#         "stu-nis-2218"],f)
 logger.Log_write(f"{post_periodic_this_week.keys()}")
 unique_nis_notif = []
 for day_week,post_values in post_periodic_this_week.items():
@@ -125,7 +127,7 @@ for day_week,post_values in post_periodic_this_week.items():
             #     logger.Log_write(f'id : {id_stu} tipe : TELAT time : {time_attend}')
             #     tipe = 'TELAT'
             # else:
-            print(f'id : {id_stu} tipe : HADIR time : {time_attend}')
+            print(f'id : {id_stu} tipe : HADIR time : {time_attend}  Key : {key}')
             logger.Log_write(f'id : {id_stu} tipe : HADIR time : {time_attend} Key : {key}')
             # post the payload
             r = requests.post(API_URL,{'id':id_stu,'tipe':tipe,'time':time_attend})
@@ -142,7 +144,7 @@ for day_week,post_values in post_periodic_this_week.items():
             if key not in unique_nis_notif:
                 print("Sending notif ...")
                 logger.Log_write(f"Sending notif once for nis : {key}")
-                r = current_session.post(f"{API_URL_BACKEND_WA}/absensi",json={'nis':id_stu})
+                r = current_session.post(f"{API_URL_BACKEND_WA}/absensi",json={'nis':key.replace("stu-nis-", "")})
                 if r.status_code >= 200 and r.status_code <=299:
                     print(f"Key : {key} Notif sent")
                     logger.Log_write(f'Key : {key} Notif sent')

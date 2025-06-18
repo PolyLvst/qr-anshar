@@ -5,7 +5,7 @@ import os
 
 class write_some_log():
     def __init__(self,path,which_running) -> None:
-        self.max_log_age = 3 # Day
+        self.max_log_age = 15 # Day
         self.log_path = path
         if not os.path.exists('./logs'):
             os.mkdir('./logs')
@@ -37,9 +37,9 @@ class write_some_log():
             file_age_seconds = current_time - file_stat.st_mtime
             # Compare the age with the maximum allowed age
             if file_age_seconds > max_age_seconds:
-                # File is older than 3 days, so delete it
+                # File is older than max age seconds days, so delete it
                 os.remove(file_path)
-                print(f"{file_path} has been deleted as it's more than 3 days old.")
+                print(f"{file_path} has been deleted as it's more than {self.max_log_age} days old.")
 
 if __name__ == '__main__':
     logger = write_some_log('./logs/test.log','logwriter.py')

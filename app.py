@@ -49,14 +49,14 @@ def not_allowed_file(filename:str):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_ext
 
 def _get_cache_users(curr):
-    sql = "SELECT name,full_name,class_id FROM users"
+    sql = "SELECT id,name,full_name,class_id FROM users"
     curr.execute(sql)
     data = curr.fetchall()
     info = {}
     # JSON
     for row in data:
-        id,full_name,c_id = row
-        info[f"stu-id-{id}"] = {"nama":full_name,"class_id":c_id}
+        id,nis,full_name,c_id = row
+        info[f"stu-nis-{nis}"] = {"id":id, "nama":full_name,"class_id":c_id}
     return info
 
 def _get_cache_class(curr):
@@ -83,9 +83,9 @@ if not os.path.exists("static/assets/student-pictures"):
 if not os.path.exists("./db/post_periodic"):
     os.mkdir("./db/post_periodic")
 
-def _get_student_info(id):
+def _get_student_info(nis):
     try:
-        results = cache[f"stu-id-{id}"]
+        results = cache[f"stu-nis-{nis}"]
         return results
     except Exception as e:
         # Id not found - {e}
@@ -108,9 +108,9 @@ def get_classrooms():
     data_list = [{"class_name": item["class_name"], "id": item["id"]} for item in cache_class.values()]
     return jsonify({"data":data_list})
 
-@app.route("/api/getid/<id>",methods=["GET"])
-def get_name(id):
-    results:dict = _get_student_info(id)
+@app.route("/api/getid/<nis>",methods=["GET"])
+def get_name(nis):
+    results:dict = _get_student_info(nis)
     if results == None:
         return jsonify({"status":"failed","msg":"failed, no student with that id"})
     id_class = results.get("class_id")
@@ -134,18 +134,19 @@ def absen_siswa():
         return jsonify({"status":"failed","msg":"Error, got None"})
     
     results = _get_student_info(nis)
+    stu_id = results.get("id")
     if results == None:
         return jsonify({"status":"failed","msg":"Error, user id not found"})
     
     if nis in marked_students:
         return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
     
-    f_stu_id = f"stu-id-{nis}"
+    f_stu_nis = f"stu-nis-{nis}"
     lazy_upload = {}
     if os.path.exists(periodic_post):
         with open(periodic_post,'r') as f:
             lazy_upload = json.load(f)
-        if f_stu_id in lazy_upload:
+        if f_stu_nis in lazy_upload:
             # Already marked [post_periodic]
             return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
         
@@ -154,7 +155,7 @@ def absen_siswa():
     formatted_time_H_M_S = current_time.strftime("%H:%M:%S")
 
     with open(periodic_post,'w') as f:
-        lazy_upload[f"{f_stu_id}"]={"id":nis,"tipe":"HADIR","time":formatted_time_H_M_S}
+        lazy_upload[f"{f_stu_nis}"]={"id":stu_id,"tipe":"HADIR","time":formatted_time_H_M_S}
         json.dump(lazy_upload,f)
         # logger.Log_write('Post_periodic updated')
     marked_students.append(nis)
@@ -211,11 +212,12 @@ def create_stu():
             VALUES (%s, %s, %s)
         """
         curr.execute(insert_query,(nis,nama,kelas))
+        generated_id = curr.lastrowid
         conn.commit()
         curr.close()
         conn.close()
         # Update in memory cache
-        cache[f"stu-id-{nis}"] = {"nama":nama,"class_id":kelas}
+        cache[f"stu-nis-{nis}"] = {"id":generated_id,"nama":nama,"class_id":kelas}
         return jsonify({"status":"success","msg":"Siswa berhasil terdaftar"})
     else:
         return jsonify({"status":"failed","msg":"Foto tidak terupload"})
@@ -256,7 +258,8 @@ def edit_stu():
     curr.close()
     conn.close()
     # Update in memory cache
-    cache[f"stu-id-{nis}"] = {"nama":nama,"class_id":kelas}
+    previous_id = is_user_exist.get("id")
+    cache[f"stu-nis-{nis}"] = {"id":previous_id,"nama":nama,"class_id":kelas}
     if "file" in request.files:
         image_receive = request.files.get("file")
         if not_allowed_file(image_receive):
