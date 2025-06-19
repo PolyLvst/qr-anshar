@@ -277,11 +277,6 @@ def edit_stu():
     else:
         return jsonify({"status":"success","msg":"Data terupdate"})
 
-@app.route('/login',methods=['GET'])
-def login():
-    msg = request.args.get('msg')
-    return render_template('login.html',msg=msg)
-
 @app.route('/sign_in',methods=['POST'])
 def sign_in():
     username_receive = request.form.get('username_give')
