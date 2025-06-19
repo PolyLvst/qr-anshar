@@ -1,7 +1,8 @@
 from flask import Flask,render_template,jsonify,request
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-import mysql.connector
+from requests import Response
+import requests
 import json
 import os
 import re
@@ -9,59 +10,47 @@ import re
 app = Flask(__name__)
 
 load_dotenv(override=True)
-HOST_DB = os.environ.get("HOST_DB")
-USER_DB = os.environ.get("USER_DB")
-PASS_DB = os.environ.get("PASS_DB")
-NAME_DB = os.environ.get("NAME_DB")
-db_config = {
-    "host": HOST_DB,
-    "user": USER_DB,
-    "password": PASS_DB,
-    "database": NAME_DB
-}
+API_URL_BASE = os.environ.get("API_URL_BASE")
 
 now = datetime.now()
 formatted_time = now.strftime("%d-%m-%Y")
 # logger = write_some_log(f'./logs/{formatted_time}.log','db.py')
 periodic_post = f"./db/post_periodic/post_periodic{formatted_time}.json"
 
-def connect_db():
-    try:
-        conn = mysql.connector.connect(**db_config)
-    except Exception as e:
-        print(f"{e} \n --- Error --- ")
+def _get_cache_users():
+    endpoint_users = f"{API_URL_BASE}api/users/"
+    response:Response = requests.get(endpoint_users)
+    if not response.ok:
+        print(f"--- ERROR CANNOT GET {endpoint_users} ---")
         exit()
-    cursor = conn.cursor()
-    return cursor,conn
-
-def _get_cache_users(curr):
-    sql = "SELECT id,name,full_name,class_id FROM users"
-    curr.execute(sql)
-    data = curr.fetchall()
+    data = response.json().get("values")
     info = {}
     # JSON
-    for row in data:
-        id,nis,full_name,c_id = row
+    for value in data:
+        id = value.get("id")
+        nis = value.get("name")
+        full_name = value.get("full_name")
+        c_id = value.get("class_id")
         info[f"stu-nis-{nis}"] = {"id":id, "nama":full_name,"class_id":c_id}
     return info
 
-def _get_cache_class(curr):
-    # sql = "SELECT id,class_name FROM classes ORDER BY classes.class_name ASC"
-    sql = "SELECT id,class_name FROM classes"
-    curr.execute(sql)
-    data = curr.fetchall()
+def _get_cache_class():
+    endpoint_classes = f"{API_URL_BASE}api/classes/"
+    response:Response = requests.get(endpoint_classes)
+    if not response.ok:
+        print(f"--- ERROR CANNOT GET {endpoint_classes} ---")
+        exit()
+    data = response.json().get("values")
     info = {}
     # JSON
-    for row in data:
-        id_c,c_name = row
+    for value in data:
+        id_c = value.get("id")
+        c_name = value.get("class_name")
         info[f"class-id-{id_c}"] = {"id":id_c,"class_name":c_name}
     return info
 
-cursor,conn = connect_db()
-cache:dict = _get_cache_users(cursor)
-cache_class:dict = _get_cache_class(cursor)
-cursor.close()
-conn.close()
+cache:dict = _get_cache_users()
+cache_class:dict = _get_cache_class()
 
 marked_students = []
 if not os.path.exists("static/assets/student-pictures"):
