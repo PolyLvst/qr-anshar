@@ -1,11 +1,8 @@
-import secrets
-from PIL import Image
 from flask import Flask,render_template,jsonify,request
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import mysql.connector
 import json
-import jwt
 import os
 import re
 
@@ -22,19 +19,11 @@ db_config = {
     "password": PASS_DB,
     "database": NAME_DB
 }
-SECRET_KEY = os.environ.get("SECRET_KEY")
-TOKEN = os.environ.get("TOKEN")
-ALGORITHM = os.environ.get("ALGORITHM")
-ADMIN_NM = os.environ.get("ADMIN_NM")
-ADMIN_PW = os.environ.get("ADMIN_PW")
-# JWT Token exp
-Expired_Seconds = 60 * 60 * 24 # 24 Hour / 86400 seconds
 
 now = datetime.now()
 formatted_time = now.strftime("%d-%m-%Y")
 # logger = write_some_log(f'./logs/{formatted_time}.log','db.py')
 periodic_post = f"./db/post_periodic/post_periodic{formatted_time}.json"
-allowed_ext = {'png', 'jpg', 'jpeg'}
 
 def connect_db():
     try:
@@ -44,9 +33,6 @@ def connect_db():
         exit()
     cursor = conn.cursor()
     return cursor,conn
-
-def not_allowed_file(filename:str):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_ext
 
 def _get_cache_users(curr):
     sql = "SELECT id,name,full_name,class_id FROM users"
@@ -103,18 +89,13 @@ def _get_class_info(id):
 def main():
     return render_template("index.html")
 
-@app.route("/api/get_classrooms",methods=["GET"])
-def get_classrooms():
-    data_list = [{"class_name": item["class_name"], "id": item["id"]} for item in cache_class.values()]
-    return jsonify({"data":data_list})
-
 @app.route("/api/getid/<nis>",methods=["GET"])
 def get_name(nis):
     results:dict = _get_student_info(nis)
     if results == None:
         return jsonify({"status":"failed","msg":"failed, no student with that id"})
     id_class = results.get("class_id")
-    class_stu_unformat = cache_class[f"class-id-{id_class}"].get("class_name")
+    class_stu_unformat = _get_class_info(id_class).get("class_name")
     class_stu = re.sub(r"(?i)kelas", "", class_stu_unformat)
     data = {
         "data":{"name":results.get("nama"),
@@ -164,133 +145,6 @@ def absen_siswa():
         "status":"oke",
         "msg":"success"}
     return jsonify(data)
-
-@app.route("/api/add_student",methods=["POST"])
-def create_stu():
-    token_receive = request.cookies.get(TOKEN)
-    try:
-        payload = jwt.decode(token_receive,SECRET_KEY,algorithms=[ALGORITHM])
-        msg = "token is valid, Authenticated"
-        pass
-    except jwt.ExpiredSignatureError:
-        msg = 'Your session has expired'
-        return jsonify({"msg":msg,"status":"not authenticated"})
-    except jwt.exceptions.DecodeError:
-        msg = 'Something wrong happens'
-        return jsonify({"msg":msg,"status":"not authenticated"})
-    
-    curr,conn = connect_db()
-    nis = request.form.get("nis")
-    nama = request.form.get("nama")
-    kelas = request.form.get("kelas")
-    if not nis or not nama or not kelas:
-        return jsonify({"status":"failed","msg":"data incomplete"})
-    
-    is_user_exist = _get_student_info(nis)
-    if is_user_exist:
-        return jsonify({"status":"failed","msg":"ID terpakai"})
-    
-    is_class_exist = _get_class_info(kelas)
-    if not is_class_exist:
-        return jsonify({"status":"failed","msg":"Kelas tidak ditemukan"})
-    
-    if "file" in request.files:
-        image_receive = request.files.get("file")
-        if not_allowed_file(image_receive):
-            return jsonify({"status":"failed","msg":f"Extensions allowed : {allowed_ext}"})
-
-        # extension = image_receive.filename.split('.')[-1]
-        extension = "jpg"
-        file_name_image = f'static/assets/student-pictures/{nis}.{extension}'
-        image = Image.open(image_receive)
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
-        image.save(os.path.join(app.root_path,file_name_image),format='JPEG')
-        # path_img = file_name_image
-        insert_query = """
-            INSERT INTO users (name, full_name, class_id)
-            VALUES (%s, %s, %s)
-        """
-        curr.execute(insert_query,(nis,nama,kelas))
-        generated_id = curr.lastrowid
-        conn.commit()
-        curr.close()
-        conn.close()
-        # Update in memory cache
-        cache[f"stu-nis-{nis}"] = {"id":generated_id,"nama":nama,"class_id":kelas}
-        return jsonify({"status":"success","msg":"Siswa berhasil terdaftar"})
-    else:
-        return jsonify({"status":"failed","msg":"Foto tidak terupload"})
-    
-@app.route("/api/edit_student",methods=["POST"])
-def edit_stu():
-    token_receive = request.cookies.get(TOKEN)
-    try:
-        payload = jwt.decode(token_receive,SECRET_KEY,algorithms=[ALGORITHM])
-        msg = "token is valid, Authenticated"
-        pass
-    except jwt.ExpiredSignatureError:
-        msg = 'Your session has expired'
-        return jsonify({"msg":msg,"status":"not authenticated"})
-    except jwt.exceptions.DecodeError:
-        msg = 'Something wrong happens'
-        return jsonify({"msg":msg,"status":"not authenticated"})
-    
-    curr,conn = connect_db()
-    nis = request.form.get("nis")
-    nama = request.form.get("nama")
-    kelas = request.form.get("kelas")
-    if not nis or not nama or not kelas:
-        return jsonify({"status":"failed","msg":"data incomplete"})
-    
-    is_user_exist = _get_student_info(nis)
-    if not is_user_exist:
-        return jsonify({"status":"failed","msg":"ID tidak ditemukan"})
-    
-    is_class_exist = _get_class_info(kelas)
-    if not is_class_exist:
-        return jsonify({"status":"failed","msg":"Kelas tidak ditemukan"})
-    insert_query = """
-        UPDATE users SET name = %s, full_name = %s, class_id=%s WHERE name = %s
-    """
-    curr.execute(insert_query,(nis,nama,kelas,nis))
-    conn.commit()
-    curr.close()
-    conn.close()
-    # Update in memory cache
-    previous_id = is_user_exist.get("id")
-    cache[f"stu-nis-{nis}"] = {"id":previous_id,"nama":nama,"class_id":kelas}
-    if "file" in request.files:
-        image_receive = request.files.get("file")
-        if not_allowed_file(image_receive):
-            return jsonify({"status":"failed","msg":f"Extensions allowed : {allowed_ext}"})
-
-        # extension = image_receive.filename.split('.')[-1]
-        extension = "jpg"
-        file_name_image = f'static/assets/student-pictures/{nis}.{extension}'
-        image = Image.open(image_receive)
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
-        image.save(os.path.join(app.root_path,file_name_image),format='JPEG')
-        # path_img = file_name_image
-        return jsonify({"status":"success","msg":"Data terupdate"})
-    else:
-        return jsonify({"status":"success","msg":"Data terupdate"})
-
-@app.route('/sign_in',methods=['POST'])
-def sign_in():
-    username_receive = request.form.get('username_give')
-    password_receive = request.form.get('password_give')
-    is_correct_username = secrets.compare_digest(ADMIN_NM,username_receive)
-    is_correct_password = secrets.compare_digest(ADMIN_PW,password_receive)
-    if not is_correct_username or not is_correct_password:
-        return jsonify({"result": "fail","msg": "Cannot find user with that combination of id and password",})
-    payload = {
-        "id": username_receive,
-        "exp": datetime.utcnow() + timedelta(seconds=Expired_Seconds),
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return jsonify({"result": "success","token": token})
 
 if __name__ == "__main__":
     # app.run("0.0.0.0",5000,True)
