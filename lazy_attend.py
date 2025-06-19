@@ -30,8 +30,8 @@ find_this = os.environ
 # API anshar
 API_URL = find_this['API_URL']
 API_URL_BACKEND_WA = find_this['API_URL_BACKEND_WA']
-EMAIL_ADMIN = find_this['EMAIL_ADMIN']
-PASSWORD_ADMIN = find_this['PASSWORD_ADMIN']
+USERNAME_WA_GATEWAY = find_this['USERNAME_WA_GATEWAY']
+PASSWORD_WA_GATEWAY = find_this['PASSWORD_WA_GATEWAY']
 # time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
 lazy_attend_util = MyUtils()
@@ -43,7 +43,7 @@ current_session = requests.Session()
 is_expired_cookie = lazy_attend_util.is_expired()
 if not is_expired_cookie:
     print(">> Getting cookie ...")
-    lazy_attend_util.login_and_save_new_cookie(API_URL_BACKEND_WA, EMAIL_ADMIN, PASSWORD_ADMIN)
+    lazy_attend_util.login_and_save_new_cookie(API_URL_BACKEND_WA, USERNAME_WA_GATEWAY, PASSWORD_WA_GATEWAY)
     prev_cookie = lazy_attend_util.load_previous_cookie()
     current_session.cookies.update(prev_cookie)
 else:
