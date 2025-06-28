@@ -123,9 +123,11 @@ def absen_siswa():
     current_time = datetime.now().time()
     # Format the time as HH:MM:SS
     formatted_time_H_M_S = current_time.strftime("%H:%M:%S")
+    class_id = results.get("class_id")
+    stu_name = results.get("nama")
 
     with open(periodic_post,'w') as f:
-        lazy_upload[f"{f_stu_nis}"]={"id":stu_id,"tipe":"HADIR","time":formatted_time_H_M_S}
+        lazy_upload[f"{f_stu_nis}"]={"id":stu_id,"class_id":class_id,"stu_name":stu_name,"tipe":"HADIR","time":formatted_time_H_M_S}
         json.dump(lazy_upload,f)
         # logger.Log_write('Post_periodic updated')
     marked_students.append(nis)

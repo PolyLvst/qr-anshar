@@ -8,5 +8,5 @@
 release_archive.zip
 __pycache__
 .env
-cookie.json
+access_token.json
 qr_cards/outputs

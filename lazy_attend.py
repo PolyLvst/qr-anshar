@@ -10,9 +10,6 @@ import pickle
 import time
 import os
 
-# run this file with cron with interval of 5 minutes
-# atau windows task scheduler
-
 # lazy upload periodic json file
 now = datetime.now()
 formatted_time = now.strftime("%d-%m-%Y")
@@ -26,13 +23,11 @@ check_this_week_seconds = 7 * 24 * 60 * 60
 
 load_dotenv()
 find_this = os.environ
-# JAM_TERAKHIR_MASUK = find_this['JAM_TERAKHIR_MASUK']
 # API anshar
 API_URL = find_this['API_URL']
 API_URL_BACKEND_WA = find_this['API_URL_BACKEND_WA']
 USERNAME_WA_GATEWAY = find_this['USERNAME_WA_GATEWAY']
 PASSWORD_WA_GATEWAY = find_this['PASSWORD_WA_GATEWAY']
-# time1 = datetime.strptime(JAM_TERAKHIR_MASUK, "%H:%M:%S")
 
 lazy_attend_util = MyUtils()
 
@@ -40,16 +35,16 @@ if not os.path.exists("./db/post_periodic"):
     os.mkdir("./db/post_periodic")
 
 current_session = requests.Session()
-is_expired_cookie = lazy_attend_util.is_expired()
-if not is_expired_cookie:
-    print(">> Getting cookie ...")
-    lazy_attend_util.login_and_save_new_cookie(API_URL_BACKEND_WA, USERNAME_WA_GATEWAY, PASSWORD_WA_GATEWAY)
-    prev_cookie = lazy_attend_util.load_previous_cookie()
-    current_session.cookies.update(prev_cookie)
+is_expired_access_token = lazy_attend_util.is_expired()
+if not is_expired_access_token:
+    print(">> Getting access token ...")
+    lazy_attend_util.login_and_save_new_access_token(API_URL_BACKEND_WA, USERNAME_WA_GATEWAY, PASSWORD_WA_GATEWAY)
+    prev_access_token = lazy_attend_util.load_previous_access_token()
+    current_session.headers.update({"Authorization": f"Bearer {prev_access_token}"})
 else:
-    print(">> Loaded saved cookie ...")
-    prev_cookie = lazy_attend_util.load_previous_cookie()
-    current_session.cookies.update(prev_cookie)
+    print(">> Loaded saved access token ...")
+    prev_access_token = lazy_attend_util.load_previous_access_token()
+    current_session.headers.update({"Authorization": f"Bearer {prev_access_token}"})
 
 post_periodic_this_week = {}
 for file_name in os.listdir('./db/post_periodic'):
@@ -91,7 +86,6 @@ for file_name in os.listdir('./db/post_periodic'):
 logger.Log_write(f"{post_periodic_this_week.keys()}")
 unique_nis_notif = []
 for day_week,post_values in post_periodic_this_week.items():
-    # print(f'Jam masuk : {JAM_TERAKHIR_MASUK}')
     post_periodic = post_values.get("post_periodic",False)
     posted = post_values.get("posted",False)
     if post_periodic:
@@ -115,18 +109,12 @@ for day_week,post_values in post_periodic_this_week.items():
         for key,value in payloads.items():
             if key in marked_ids:
                 continue
-            # id_stu = int(value.get("id"))
             id_stu = value.get("id")
+            class_id = value.get("class_id")
+            stu_name = value.get("stu_name")
             tipe = value.get("tipe")
             time_attend = value.get("time")
             
-            # time_date_format = datetime.strptime(time_attend,'%H:%M:%S')
-            # Jika waktu masuk siswa > waktu telat maka tipe = TELAT
-            # if time_date_format > time1:
-            #     print(f'id : {id_stu} tipe : TELAT time : {time_attend}')
-            #     logger.Log_write(f'id : {id_stu} tipe : TELAT time : {time_attend}')
-            #     tipe = 'TELAT'
-            # else:
             print(f'id : {id_stu} tipe : HADIR time : {time_attend}  Key : {key}')
             logger.Log_write(f'id : {id_stu} tipe : HADIR time : {time_attend} Key : {key}')
             # post the payload
@@ -144,7 +132,13 @@ for day_week,post_values in post_periodic_this_week.items():
             if key not in unique_nis_notif:
                 print("Sending notif ...")
                 logger.Log_write(f"Sending notif once for nis : {key}")
-                r = current_session.post(f"{API_URL_BACKEND_WA}/absensi",json={'nis':key.replace("stu-nis-", "")})
+                payload = {
+                    "erina_class_id": class_id,
+                    "erina_user_id": id_stu,
+                    "attendance_name": stu_name,
+                    "type": tipe
+                }
+                r = current_session.post(f"{API_URL_BACKEND_WA}/attendances/",json=payload)
                 if r.status_code >= 200 and r.status_code <=299:
                     print(f"Key : {key} Notif sent")
                     logger.Log_write(f'Key : {key} Notif sent')
