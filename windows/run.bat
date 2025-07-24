@@ -3,7 +3,7 @@ cd %CD%
 cd ..
 if not exist "./venv" (
     echo Creating virtual environment...
-    python -m venv venv
+    py -m venv venv
     echo Installing requirements...
     call ./venv/Scripts/activate
     pip install -r "./requirements.txt"

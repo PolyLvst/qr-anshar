@@ -37,7 +37,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 def _get_cache_users():
     endpoint_users = f"{API_URL_ERINA_BASE}users"
     response:Response = requests.get(endpoint_users)
@@ -91,7 +90,18 @@ def _get_class_info(id):
     except Exception as e:
         # Id not found - {e}
         return None
-    
+
+# --- Startup --- #
+
+def Startup():
+    init_db()
+    worker_thread = threading.Thread(target=lazy_attend_worker, daemon=True)
+    worker_thread.start()
+
+Startup()
+
+# --- Startup --- #
+
 @app.route("/",methods=["GET"])
 def main():
     return render_template("index.html")
@@ -164,9 +174,6 @@ def view_attendance():
     return jsonify([dict(row) for row in rows])
 
 if __name__ == "__main__":
-    init_db()
-    worker_thread = threading.Thread(target=lazy_attend_worker, daemon=True)
-    worker_thread.start()
     # app.run("0.0.0.0",5000,True)
     port = 5000
     from waitress import serve
