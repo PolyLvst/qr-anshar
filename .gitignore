@@ -1,5 +1,6 @@
 /static/assets/student-pictures
-/venv
+/venv*
+attendance.db
 /logs
 /coba coba
 /db/post_periodic

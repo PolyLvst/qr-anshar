@@ -36,7 +36,7 @@ class MyUtils:
 
     def login_and_save_new_cookie(self, url, username, password):
         current_session = requests.Session()
-        current_session.post(f"{url}/login/",data={'username':username,'password':password})
+        current_session.post(url=url, data={'username':username,'password':password})
         cookies = requests.utils.dict_from_cookiejar(current_session.cookies)
         with open(self.access_token_path, "w") as f:
             json.dump(cookies, f)
@@ -44,7 +44,7 @@ class MyUtils:
 
     def login_and_save_new_access_token(self, url, username, password):
         current_session = requests.Session()
-        response = current_session.post(f"{url}/login/",data={'username':username,'password':password})
+        response = current_session.post(url=url ,data={'username':username,'password':password})
         if response.ok:
             token = response.json().get("access_token")
             with open(self.access_token_path, "w") as f:

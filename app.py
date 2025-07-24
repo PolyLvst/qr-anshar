@@ -1,24 +1,45 @@
 from flask import Flask,render_template,jsonify,request
+from attendance_worker import lazy_attend_worker
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime
 from requests import Response
+import threading
 import requests
-import json
+import sqlite3
 import os
 import re
 
 app = Flask(__name__)
 
 load_dotenv(override=True)
-API_URL_BASE = os.environ.get("API_URL_BASE")
+API_URL_ERINA_BASE = os.environ.get("API_URL_ERINA_BASE")
 
-now = datetime.now()
-formatted_time = now.strftime("%d-%m-%Y")
-# logger = write_some_log(f'./logs/{formatted_time}.log','db.py')
-periodic_post = f"./db/post_periodic/post_periodic{formatted_time}.json"
+def get_db():
+    conn = sqlite3.connect("attendance.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nis TEXT NOT NULL,
+            student_id TEXT NOT NULL,
+            student_name TEXT NOT NULL,
+            class_id TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            is_sent TEXT NOT NULL DEFAULT 'no',
+            date TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
 
 def _get_cache_users():
-    endpoint_users = f"{API_URL_BASE}api/users/"
+    endpoint_users = f"{API_URL_ERINA_BASE}users"
     response:Response = requests.get(endpoint_users)
     if not response.ok:
         print(f"--- ERROR CANNOT GET {endpoint_users} ---")
@@ -35,7 +56,7 @@ def _get_cache_users():
     return info
 
 def _get_cache_class():
-    endpoint_classes = f"{API_URL_BASE}api/classes/"
+    endpoint_classes = f"{API_URL_ERINA_BASE}classes"
     response:Response = requests.get(endpoint_classes)
     if not response.ok:
         print(f"--- ERROR CANNOT GET {endpoint_classes} ---")
@@ -52,11 +73,8 @@ def _get_cache_class():
 cache:dict = _get_cache_users()
 cache_class:dict = _get_cache_class()
 
-marked_students = []
 if not os.path.exists("static/assets/student-pictures"):
     os.mkdir("static/assets/student-pictures")
-if not os.path.exists("./db/post_periodic"):
-    os.mkdir("./db/post_periodic")
 
 def _get_student_info(nis):
     try:
@@ -96,48 +114,59 @@ def get_name(nis):
         }
     return jsonify(data)
 
-@app.route("/api/absen",methods=["POST"])
+@app.route("/api/absen", methods=["POST"])
 def absen_siswa():
     nis = request.form.get("nis")
-    if nis == None:
+    if nis is None:
         # Unknown got none ...
         return jsonify({"status":"failed","msg":"Error, got None"})
     
     results = _get_student_info(nis)
+    if results is None:
+        return jsonify({"status": "failed", "msg": "Error, user id not found"})
     stu_id = results.get("id")
-    if results == None:
-        return jsonify({"status":"failed","msg":"Error, user id not found"})
-    
-    if nis in marked_students:
-        return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
-    
-    f_stu_nis = f"stu-nis-{nis}"
-    lazy_upload = {}
-    if os.path.exists(periodic_post):
-        with open(periodic_post,'r') as f:
-            lazy_upload = json.load(f)
-        if f_stu_nis in lazy_upload:
-            # Already marked [post_periodic]
-            return jsonify({"status":"failed","msg":"Siswa telah terabsen"})
-        
-    current_time = datetime.now().time()
-    # Format the time as HH:MM:SS
-    formatted_time_H_M_S = current_time.strftime("%H:%M:%S")
     class_id = results.get("class_id")
     stu_name = results.get("nama")
 
-    with open(periodic_post,'w') as f:
-        lazy_upload[f"{f_stu_nis}"]={"id":stu_id,"class_id":class_id,"stu_name":stu_name,"tipe":"HADIR","time":formatted_time_H_M_S}
-        json.dump(lazy_upload,f)
-        # logger.Log_write('Post_periodic updated')
-    marked_students.append(nis)
-    data = {
-        "data":"data",
-        "status":"oke",
-        "msg":"success"}
-    return jsonify(data)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    current_date = now.strftime("%Y-%m-%d")
+
+    conn = get_db()
+    c = conn.cursor()
+
+    # Check for duplicate entry
+    c.execute("""
+        SELECT 1 FROM attendance WHERE nis = ? AND date = ?
+    """, (nis, current_date))
+    if c.fetchone():
+        conn.close()
+        return jsonify({"status": "failed", "msg": "Siswa telah terabsen"})
+
+    # Insert new attendance
+    c.execute("""
+        INSERT INTO attendance (nis, student_id, student_name, class_id, timestamp, is_sent, date)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (nis, stu_id, stu_name, class_id, current_time, 'no', current_date))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "oke", "msg": "success"})
+
+@app.route("/api/absensi", methods=["GET"])
+def view_attendance():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM attendance ORDER BY date DESC, timestamp DESC")
+    rows = c.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in rows])
 
 if __name__ == "__main__":
+    init_db()
+    worker_thread = threading.Thread(target=lazy_attend_worker, daemon=True)
+    worker_thread.start()
     # app.run("0.0.0.0",5000,True)
     port = 5000
     from waitress import serve
